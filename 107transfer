@@ -1,0 +1,70 @@
+#!/usr/bin/node
+
+const help = async () => {
+    console.log(`USAGE
+    ./107transfer [num den]*
+DESCRIPTION
+    num \tpolynomial numerator defined by its coefficients
+    den \tpolynomial denominator defined by its coefficients`);
+};
+
+let nbrs = [];
+
+const calc = async (formula, x) => {
+    const args = formula.split("*");
+    let res = 0;
+
+    for (let i = 0; i < args.length; i++)
+        res += parseInt(args[i]) * Math.pow(x, i + 1);
+
+    return res;
+};
+
+const exec = async (num, den) => {
+    let final = [];
+
+    for (let i = 0.0; i < 1.001; i += 0.001) {
+        const res = await calc(num, i);
+        const res2 = await calc(den, i);
+        final.push(res / res2);
+
+        if (nbrs.length < 1001)
+            nbrs.push(i);
+    }
+
+    return final;
+};
+
+const main = async (argc, argv) => {
+    if (argc < 3) {
+        process.exit(84);
+    } else if (argc == 3) {
+        if (argv[2] == "-h")
+            return help();
+        else
+            process.exit(84);
+    } else if (argc % 2 != 0) {
+        process.exit(84);
+    }
+
+    let f_res = [];
+
+    for (let i = 2; i < argc; i += 2) {
+        const res = await exec(argv[i], argv[i + 1]);
+
+        if (f_res.length == 0) {
+            f_res = res;
+        } else {
+            for (let j = 0; j < f_res.length; j++) {
+                f_res[j] *= res[j];
+            }
+        }
+    }
+
+    for (let i = 0; i < f_res.length; i++) {
+        console.log(nbrs[i].toFixed(3) + " -> " + (!f_res[i] ? 0 : f_res[i]).toFixed(5));
+    }
+    process.exit(0);
+};
+
+main(process.argv.length, process.argv);
